@@ -1,0 +1,78 @@
+ 1 <?xml version="1.0" encoding="utf-8"?>
+ 2 <project name="test" default="test" basedir=".">
+ 3  
+ 4        <!--配置基本属性-->
+ 5        <property name="src" value="src"/>
+ 6        <property name="build" value="build"/>
+ 7        <property name="lib" value="lib" />
+ 8        <property name="dist" value="dist"/>
+ 9        <property name="classpath" location="${build}"/>
+10       
+11        <!--配置测试报告的属性-->
+12        <property name="report"   value="report"/>
+13        <property name="report.xml"  value="${report}/junit/xml"/>
+14        <property name="report.html" value="${report}/junit/html"/>
+15  
+16        <!--配置运行时classpath-->
+17        <path id="classpath.run">
+18               <pathelement path="${classpath}"/>
+19               <fileset dir="${lib}">
+20                      <include name="*.jar"/>
+21               </fileset>
+22        </path>
+23  
+24   <!--配置测试时classpath-->
+25        <path id="classpath.test">
+26               <path refid="classpath.run"/>
+27               <path location="${dist}/lib/test-${DSTAMP}.jar"/>
+28        </path>
+29       
+30        <!--任务初始化-->
+31        <target name="init" >
+32               <tstamp/>
+33               <delete dir="${build}"/>
+34               <delete dir="${report}"/>
+35               <delete dir="${dist}"/>
+36               <delete file="${lib}/test-*.jar"/>
+37               <mkdir dir="${build}"/>
+38               <mkdir dir="${lib}"/>
+39               <mkdir dir="${dist}"/>
+40               <mkdir dir="${report}"/>
+41        </target>
+42       
+43        <!--配置编译任务-->
+44        <target name="compile" depends="init">
+45               <javac srcdir="${src}" destdir="${build}">
+46               <classpath refid="classpath.run" />
+47               </javac>
+48        </target>
+49            
+50        <!--配置运行任务-->
+51        <target name="run" depends="compile, dist">
+52          <java classname="com.tarena.shoot.ShootGameTest">
+53              <classpath>
+54                      <path refid="classpath.run"/>
+55               </classpath>
+56          </java>
+57        </target>
+58       
+59        <!--配置JUnit测试，打印测试结果-->
+60        <target name="test" depends="compile, dist">
+61               <mkdir dir="${report.xml}"/>
+62               <mkdir dir="${report.html}"/>
+63               <junit printsummary="yes" haltonfailure="no">
+64                      <classpath refid="classpath.run"/>
+65                      <formatter type="xml"/>
+66                      <batchtest fork="yes" todir="${report.xml}">
+67                             <fileset dir="${src}" includes="**/Test*.java"/>
+68                      </batchtest>
+69               </junit>
+70               <junitreport todir="${report.html}">
+71                      <fileset dir="${report.xml}">
+72                             <include name="*.xml"/>
+73                      </fileset>
+74                      <report format="frames" todir="${report.html}"/>
+75               </junitreport>
+76        </target>
+77  
+78 </project>
